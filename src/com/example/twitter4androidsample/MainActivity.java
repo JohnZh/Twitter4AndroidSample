@@ -1,5 +1,8 @@
 package com.example.twitter4androidsample;
 
+import com.example.twitter4androidsample.app.AppPrefs;
+import com.example.twitter4androidsample.util.ProgressHelper;
+
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -24,7 +27,7 @@ import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static final String  CALLBACK           = "http://pix2paint.com";
+    public static final String  CALLBACK           = "http://pix2paint.com"; // callback url
     public static final String  OAUTH_VERIFIER     = "oauth_verifier";
     public static final String  AUTHENTICATION_URL = "authentication_url";
     
@@ -66,7 +69,7 @@ public class MainActivity extends ActionBarActivity {
             reOAuth();
         } else {
             mTwitter.setOAuthAccessToken(new AccessToken(accessTokenKey, accessTokenSecret));
-            new UpdateTwitterStatus().execute("Test from pix2paint. Timestamp:" + System.currentTimeMillis());
+            new UpdateTwitterStatus().execute("Test from twitter4androidsample. Timestamp:" + System.currentTimeMillis());
         }
     }
 
@@ -105,6 +108,12 @@ public class MainActivity extends ActionBarActivity {
     private class GetOAuthRequestTokenTask extends AsyncTask<Void, Void, RequestToken> {
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            ProgressHelper.getInstance().show(MainActivity.this, "Geting oauth request token!");
+        }
+        
+        @Override
         protected RequestToken doInBackground(Void... arg0) {
             try {
                 return mTwitter.getOAuthRequestToken(CALLBACK);
@@ -118,6 +127,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(RequestToken result) {
             super.onPostExecute(result);
+            ProgressHelper.getInstance().cancel(MainActivity.this);
             mRequestToken = result;
             if (mRequestToken != null) {
                 Intent intent = new Intent(MainActivity.this, WebsiteActivity.class);
@@ -128,6 +138,12 @@ public class MainActivity extends ActionBarActivity {
     }
     
     private class GetOAuthAccessTokenTask extends AsyncTask<String, Void, AccessToken> {
+        
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            ProgressHelper.getInstance().show(MainActivity.this, "Geting oauth access token!");
+        }
 
         @Override
         protected AccessToken doInBackground(String... params) {
@@ -143,7 +159,9 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(AccessToken accessToken) {
             super.onPostExecute(accessToken);
+            ProgressHelper.getInstance().cancel(MainActivity.this);
             if (accessToken != null) {
+                Toast.makeText(MainActivity.this, "Get access token successfully.", Toast.LENGTH_LONG).show();
                 mTwitter.setOAuthAccessToken(accessToken);
                 mPrefs.setTwitterAccessToken(accessToken.getToken(), accessToken.getTokenSecret());
             }
@@ -152,6 +170,12 @@ public class MainActivity extends ActionBarActivity {
     
     private class UpdateTwitterStatus extends AsyncTask<String, Void, Status> {
 
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            ProgressHelper.getInstance().show(MainActivity.this, "Post tweet!");
+        }
+        
         @Override
         protected twitter4j.Status doInBackground(String... params) {
             try {
@@ -169,6 +193,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         protected void onPostExecute(twitter4j.Status result) {
             super.onPostExecute(result);
+            ProgressHelper.getInstance().cancel(MainActivity.this);
             if (result != null) {
                 Log.d("John", "Result: " + result.toString());
                 Toast.makeText(MainActivity.this, "Success!", Toast.LENGTH_LONG).show();

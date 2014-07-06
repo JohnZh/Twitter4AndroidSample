@@ -1,4 +1,4 @@
-package com.example.twitter4androidsample;
+package com.example.twitter4androidsample.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
