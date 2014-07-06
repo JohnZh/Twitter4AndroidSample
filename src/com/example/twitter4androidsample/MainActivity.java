@@ -31,6 +31,9 @@ public class MainActivity extends ActionBarActivity {
     private static final String CONSUMER_KEY       = "p8ouOBF1PijpT8z9BevbVoh4T";
     private static final String CONSUMER_SECRET    = "ssQyasHfyK3JN6olSWzeZ9NfzWTvIJMLP6102BOsg7owsC5v6i";
     
+    // https://dev.twitter.com/docs/error-codes-responses
+    private static final int ERROR_CODE_STATUS_DUPLICATE = 187;
+    
     private static final int REQ_TWITTER = 1;
 
     private AppPrefs            mPrefs;
@@ -63,7 +66,7 @@ public class MainActivity extends ActionBarActivity {
             reOAuth();
         } else {
             mTwitter.setOAuthAccessToken(new AccessToken(accessTokenKey, accessTokenSecret));
-            new UpdateTwitterStatus().execute("Test from pix2paint.");
+            new UpdateTwitterStatus().execute("Test from pix2paint. Timestamp:" + System.currentTimeMillis());
         }
     }
 
@@ -155,7 +158,10 @@ public class MainActivity extends ActionBarActivity {
                 return mTwitter.updateStatus(params[0]);
             } catch (TwitterException e) {
                 e.printStackTrace();
-                Log.e("John", "TwitterException e");
+                if (e.getErrorCode() == ERROR_CODE_STATUS_DUPLICATE) {
+                    Toast.makeText(MainActivity.this, "Twitter do not let us post same tweet during a short time", 
+                            Toast.LENGTH_LONG).show();
+                }
             }
             return null;
         }
@@ -164,7 +170,8 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(twitter4j.Status result) {
             super.onPostExecute(result);
             if (result != null) {
-                Toast.makeText(MainActivity.this, "Status:" + result.toString(), Toast.LENGTH_LONG).show();
+                Log.d("John", "Result: " + result.toString());
+                Toast.makeText(MainActivity.this, "Success!", Toast.LENGTH_LONG).show();
             }
         }
     }
